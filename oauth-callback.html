@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuickBooks Connected</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+    .success { color: #2E8B57; }
+    .code { background: #f5f5f5; padding: 12px; font-family: monospace; word-break: break-all; margin: 10px 0; }
+    button { padding: 10px 20px; font-size: 16px; cursor: pointer; margin-right: 10px; }
+    .step { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+    h2 { margin-top: 0; }
+  </style>
+</head>
+<body>
+  <h1>QuickBooks Authorization</h1>
+  <div id="result"></div>
+  <div id="instructions" style="display:none;">
+    <div class="step">
+      <h2>Step 1: Copy the code below</h2>
+      <p>Click to copy, or select and copy manually.</p>
+      <div class="code" id="codeDisplay"></div>
+      <button onclick="copyCode()">Copy Code</button>
+    </div>
+    <div class="step">
+      <h2>Step 2: Copy the Realm ID</h2>
+      <div class="code" id="realmDisplay"></div>
+      <button onclick="copyRealm()">Copy Realm ID</button>
+    </div>
+    <div class="step">
+      <h2>Step 3: Run this in your terminal</h2>
+      <p>Replace <code>YOUR_CODE</code> and <code>YOUR_REALM_ID</code> with the values above:</p>
+      <div class="code" id="commandDisplay"></div>
+      <button onclick="copyCommand()">Copy Command</button>
+    </div>
+  </div>
+  <div id="error" style="display:none;">
+    <p style="color: #c00;">No authorization code received. Make sure you completed the sign-in flow.</p>
+  </div>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const realmId = params.get('realmId');
+    const error = params.get('error');
+
+    const resultEl = document.getElementById('result');
+    const instructionsEl = document.getElementById('instructions');
+    const errorEl = document.getElementById('error');
+
+    if (error) {
+      errorEl.style.display = 'block';
+      errorEl.innerHTML = `<p style="color: #c00;">Error: ${params.get('error_description') || error}</p>`;
+    } else if (code) {
+      resultEl.innerHTML = '<p class="success">✓ Successfully authorized! Follow the steps below.</p>';
+      instructionsEl.style.display = 'block';
+      document.getElementById('codeDisplay').textContent = code;
+      document.getElementById('realmDisplay').textContent = realmId || '(check URL - realmId may be in the address bar)';
+      document.getElementById('commandDisplay').textContent =
+        `cd /Users/toddweidman/quickbooks_api && python3 scripts/exchange_code.py "${code}" "${realmId || ''}"`;
+
+      window.codeForCopy = code;
+      window.realmForCopy = realmId || '';
+    } else {
+      errorEl.style.display = 'block';
+    }
+
+    function copyCode() {
+      navigator.clipboard.writeText(code);
+      alert('Code copied!');
+    }
+    function copyRealm() {
+      navigator.clipboard.writeText(realmId || '');
+      alert('Realm ID copied!');
+    }
+    function copyCommand() {
+      const cmd = `cd /Users/toddweidman/quickbooks_api && python3 scripts/exchange_code.py "${code}" "${realmId || ''}"`;
+      navigator.clipboard.writeText(cmd);
+      alert('Command copied!');
+    }
+  </script>
+</body>
+</html>
