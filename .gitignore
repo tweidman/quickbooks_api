@@ -1,0 +1,8 @@
+.env
+*.pyc
+mcp-server/.git.bak
+mcp-server/.git
+__pycache__/
+node_modules/
+.DS_Store
+drive_token.json

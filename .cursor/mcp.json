@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "quickbooks": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "/Users/toddweidman/quickbooks_api/mcp-server"
+    }
+  }
+}

@@ -1,0 +1,52 @@
+---
+description: QuickBooks API project context and usage
+alwaysApply: true
+---
+
+# QuickBooks API Project
+
+This project queries and manages QuickBooks Online data via two paths:
+
+## 1. MCP Server (Cursor Integration)
+
+The QuickBooks MCP server exposes tools that Cursor can call directly. Configure it in **Cursor Settings → MCP**:
+
+```json
+{
+  "quickbooks": {
+    "command": "node",
+    "args": ["dist/index.js"],
+    "cwd": "/Users/toddweidman/quickbooks_api/mcp-server"
+  }
+}
+```
+
+**Available MCP tools** (Create, Get, Search, Update, Delete for each entity):
+- Account, Bill, Bill Payment, Customer, Employee, Estimate, Invoice, Item, Journal Entry, Purchase, Vendor
+
+When the user asks about QuickBooks data (customers, invoices, bills, etc.), use the appropriate MCP tool rather than writing new API code.
+
+## 2. Python Scripts (Direct REST API)
+
+For custom queries or ad-hoc scripts, use the Python scripts in `scripts/`:
+
+```bash
+cd scripts && python query_customers.py
+```
+
+Scripts read credentials from `.env` in the project root. Use the QuickBooks query syntax:
+
+```sql
+SELECT * FROM Customer WHERE Active = true
+SELECT * FROM Invoice WHERE TxnDate >= '2024-01-01' ORDERBY metadata.lastupdatedtime DESC
+SELECT * FROM Bill STARTPOSITION 1 MAXRESULTS 100
+```
+
+**Limitations:** No `JOIN`, `GROUP BY`, or `OR` in WHERE. Use `STARTPOSITION` / `MAXRESULTS` for pagination.
+
+## Credentials
+
+- **MCP server**: `mcp-server/.env` — needs `QUICKBOOKS_CLIENT_ID`, `QUICKBOOKS_CLIENT_SECRET`, `QUICKBOOKS_ENVIRONMENT`, and after OAuth: `QUICKBOOKS_REFRESH_TOKEN`, `QUICKBOOKS_REALM_ID`
+- **Python scripts**: `.env` in project root — same variables, copy from `.env.example`
+
+First use of an MCP tool will open a browser for OAuth and save tokens to `mcp-server/.env` if they're missing.
